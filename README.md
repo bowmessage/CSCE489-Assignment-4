@@ -1,2 +1,2 @@
 # CSCE489-Assignment-4
-Ryan Vrecenar
+Ryan Vrecenar, James Bowman
