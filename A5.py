@@ -35,10 +35,16 @@ while i < (len(binhex)-1):
 	if(i%32==0):
 		print format(i/2, 'x').zfill(8)+ ": ", 
 	hexstr = binhex[i]+binhex[i+1]
-	sys.stdout.write(int('0x'+hexstr, 16))
-	if(i%2==1):
+	#print binhex[i]+binhex[i+1]
+	#print hexstr.decode("hex"),
+	if( int(hexstr,16) > 15 and (int(hexstr,16) < 120 or int(hexstr,16) > 254)) :
+		#print int(hexstr,16),
+		print unichr(int(hexstr,16)),
+	else:
+		print ".",
+	if(i%2==2):
 		sys.stdout.write(" ")
-	if(i%32==31):
+	if(i%32==30):
 		print ""
 	i += 2	
 '''
