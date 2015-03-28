@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*- 
 # top right
-import os, sys, subprocess, signal, base64, array, binascii
+import os, sys, subprocess, signal, base64, array, binascii, random
 from subprocess import Popen, PIPE
 
 import pyxed
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
+debug = 1
 
 # REPLACE WITH ARG2
 #filename = 'A5.py'
@@ -73,14 +74,16 @@ while True:
 	print inst.dump_intel_format()
 
 '''
+
+#/////////////////////////////////////////////////////////////////////Run Instructions Byte by Byte to create a Answer Key
 q = 0 # tracks header pointer
 p = 2 # tracks tail pointer
 # hex string to track for testing
 
-#random starting point to determine realignment calculation
-#q = 4
+
 
 #SET HEXDIG to file input
+#hexdig = binhex
 
 instr_key = dict()
 
@@ -108,7 +111,7 @@ while True:
 	except:
 		if(debug == 1):
 			print "Oops!  That was not a valid decode.  Try again..."
-			print "p: "+ str(p) + " q: " + str(q) + hexdig[q:p]
+			print "p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p]
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 		if(p <= len(hexdig)):
@@ -116,5 +119,71 @@ while True:
 		else:
 			break
 		continue
+	
+#/////////////////////////////////////////////////////////////////////Given this answer key run same binary and pick random start point
+#/////////////////////////////////////////////////////////////////////Find number of bad instructions before realigned
+# reset starting conditions
+q = 0 # tracks header pointer
+p = 2 # tracks tail pointer
+
+#random starting point to determine realignment calculation
+q = random.randint(0, len(hexdig)-1)
+if q%2 == 1:
+	q+=1
+intial_q = q
+p = q+2 
+
+#create a dictionary for comparison
+instr_test = dict()
+print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+print "STARTING FILE AT " + str(q)
+
+if q <= len(hexdig):
+	while True:
+		try:
+			xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
+			#print hexdig[q:p]
+			if(p == len(hexdig)):
+				break
+			xed.runtime_address = 0x00000000 + q/2
+			inst = xed.decode()							# decodes bytes between header and tail	
+			instr_str = inst.dump_intel_format()
+			if(debug%2 == 0):
+				print " Address: " + instr_str[:8] + " Instruction: " + instr_str[9:]
+			instr_test[instr_str[:8]]	= instr_str[9:]
+			if(debug%2 == 1):
+				print instr_str							# dumps sucessful translation
+			xed = pyxed.Decoder()
+			xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+			xed.runtime_address = 0x00000000 + q/2
+			q = p 										# move head to tail
+			p = q + 2
+			continue
+		except:
+			if(debug == 1):
+				print "Oops!  That was not a valid decode.  Try again..."
+				print "p: "+ str(p) + " q: " + str(q) + " | "+hexdig[q:p]
+			xed = pyxed.Decoder()
+			xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+			if(p <= len(hexdig)):
+				p += 2
+			else:
+				break
+			continue
 
 # A KEY OF CORRECT PARSING TO COMPARE TO
+print "CONTENTS OF KEY DICTONARY"
+for key in sorted(instr_key):
+    print "%s: %s" % (key,instr_key[key])
+
+found_align = 0
+instruction_offset = 0
+	
+print "CONTENTS OF TEST DICTONARY"
+for key in sorted(instr_test):
+	if instr_key.has_key(key) and not(found_align):
+		found_align = 1
+		instruction_offset = int(key,16)
+	print "%s: %s" % (key,instr_test[key])
+
+print "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "	
