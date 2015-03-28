@@ -5,6 +5,10 @@ from subprocess import Popen, PIPE
 
 import pyxed
 
+# 1 for instructions, and invalid output
+# 3 for instructions only
+debug = 3
+
 # REPLACE WITH ARG2
 filename = 'A5.py'
 #filename = 'codebreaker2.exe'
@@ -61,6 +65,7 @@ xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 xed.itext = binascii.unhexlify("5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3")
 xed.runtime_address = 0x00000000
 
+#/////////////////////////////////////////////////////////////////////FULLY RUNS INSTRUCTION FOR FULL BINARY
 '''
 while True:
 	inst = xed.decode()
@@ -74,21 +79,30 @@ p = 2 # tracks tail pointer
 # hex string to track for testing
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
 
+#random starting point to determine realignment calculation
+q = 4
+
 #loop through until terminate where p == q 
 while True:
 	try:
 		xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
 		#print hexdig[q:p]
+		if(p == len(hexdig)):
+			break
+		xed.runtime_address = 0x00000000 + q/2
 		inst = xed.decode()							# decodes bytes between header and tail	
-		print inst.dump_intel_format()				# dumps sucessful translation
+		if(debug%2 == 1):
+			print inst.dump_intel_format()				# dumps sucessful translation
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+		xed.runtime_address = 0x00000000 + q/2
 		q = p 										# move head to tail
 		p = q + 2
 		continue
 	except:
-		print "Oops!  That was not a valid decode.  Try again..."
-		print "p: "+ str(p) + " q: " + str(q) + hexdig[q:p]
+		if(debug == 1):
+			print "Oops!  That was not a valid decode.  Try again..."
+			print "p: "+ str(p) + " q: " + str(q) + hexdig[q:p]
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 		if(p <= len(hexdig)):
