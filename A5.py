@@ -7,11 +7,10 @@ import pyxed
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
-debug = 3
 
 # REPLACE WITH ARG2
-filename = 'A5.py'
-#filename = 'codebreaker2.exe'
+#filename = 'A5.py'
+filename = 'codebreaker2.exe'
 with open(filename, 'rb') as f:
     content = f.read()
 binhex = binascii.hexlify(content);
@@ -61,8 +60,8 @@ while i < (len(binhex)-1):
 
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-#xed.itext = binascii.unhexlify(binhex)
-xed.itext = binascii.unhexlify("5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3")
+hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
+xed.itext = binascii.unhexlify(hexdig)
 xed.runtime_address = 0x00000000
 
 #/////////////////////////////////////////////////////////////////////FULLY RUNS INSTRUCTION FOR FULL BINARY
@@ -72,15 +71,18 @@ while True:
 	if inst is None:
 		break
 	print inst.dump_intel_format()
-'''
 
+'''
 q = 0 # tracks header pointer
 p = 2 # tracks tail pointer
 # hex string to track for testing
-hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
 
 #random starting point to determine realignment calculation
-q = 4
+#q = 4
+
+#SET HEXDIG to file input
+
+instr_key = dict()
 
 #loop through until terminate where p == q 
 while True:
@@ -91,8 +93,12 @@ while True:
 			break
 		xed.runtime_address = 0x00000000 + q/2
 		inst = xed.decode()							# decodes bytes between header and tail	
+		instr_str = inst.dump_intel_format()
+		if(debug%2 == 0):
+			print " Address: " + instr_str[:8] + " Instruction: " + instr_str[9:]
+		instr_key[instr_str[:8]]	= instr_str[9:]
 		if(debug%2 == 1):
-			print inst.dump_intel_format()				# dumps sucessful translation
+			print instr_str							# dumps sucessful translation
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 		xed.runtime_address = 0x00000000 + q/2
@@ -110,4 +116,5 @@ while True:
 		else:
 			break
 		continue
-	
+
+# A KEY OF CORRECT PARSING TO COMPARE TO
