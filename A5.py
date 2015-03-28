@@ -59,10 +59,41 @@ xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 #xed.itext = binascii.unhexlify(binhex)
 xed.itext = binascii.unhexlify("5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3")
-xed.runtime_address = 0x10001000
+xed.runtime_address = 0x00000000
 
+'''
 while True:
 	inst = xed.decode()
 	if inst is None:
 		break
 	print inst.dump_intel_format()
+'''
+
+q = 0 # tracks header pointer
+p = 2 # tracks tail pointer
+# hex string to track for testing
+hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
+
+#loop through until terminate where p == q 
+while True:
+	try:
+		xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
+		#print hexdig[q:p]
+		inst = xed.decode()							# decodes bytes between header and tail	
+		print inst.dump_intel_format()				# dumps sucessful translation
+		xed = pyxed.Decoder()
+		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+		q = p 										# move head to tail
+		p = q + 2
+		continue
+	except:
+		print "Oops!  That was not a valid decode.  Try again..."
+		print "p: "+ str(p) + " q: " + str(q) + hexdig[q:p]
+		xed = pyxed.Decoder()
+		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+		if(p <= len(hexdig)):
+			p += 2
+		else:
+			break
+		continue
+	
