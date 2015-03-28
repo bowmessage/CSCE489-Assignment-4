@@ -6,8 +6,8 @@ from subprocess import Popen, PIPE
 import pyxed
 
 # REPLACE WITH ARG2
-#filename = 'A5.py'
-filename = 'codebreaker2.exe'
+filename = 'A5.py'
+#filename = 'codebreaker2.exe'
 with open(filename, 'rb') as f:
     content = f.read()
 binhex = binascii.hexlify(content);
@@ -57,7 +57,8 @@ while i < (len(binhex)-1):
 
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-xed.itext = binascii.unhexlify(binhex)
+#xed.itext = binascii.unhexlify(binhex)
+xed.itext = binascii.unhexlify("5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3")
 xed.runtime_address = 0x10001000
 
 while True:
