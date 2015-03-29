@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- 
-# top right
+
 import os, sys, subprocess, signal, base64, array, binascii, random
 from subprocess import Popen, PIPE
 
@@ -7,7 +7,7 @@ import pyxed
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
-debug = 0
+debug = 2
 
 # REPLACE WITH ARG2
 #filename = 'A5.py'
@@ -62,7 +62,7 @@ while i < (len(binhex)-1):
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
-hexdig = binhex
+#hexdig = binhex
 xed.itext = binascii.unhexlify(hexdig)
 xed.runtime_address = 0x00000000
 
@@ -81,8 +81,6 @@ q = 0 # tracks header pointer
 p = 2 # tracks tail pointer
 # hex string to track for testing
 
-
-
 #SET HEXDIG to file input
 #hexdig = binhex
 
@@ -92,8 +90,8 @@ instr_key = dict()
 while True:
 	try:
 		xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
-		#print hexdig[q:p]
-		if(p == len(hexdig)):
+		print hexdig[q:p]
+		if(q == len(hexdig)):
 			break
 		xed.runtime_address = 0x00000000 + q/2
 		inst = xed.decode()							# decodes bytes between header and tail	
@@ -111,13 +109,15 @@ while True:
 		continue
 	except:
 		if(debug == 1):
-			#print "Oops!  That was not a valid decode.  Try again..."
-			#print "p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p]
+			print "Oops!  That was not a valid decode.  Try again..."
+			print "p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p]
 			print "LENGEHTH: " + str(len(hexdig[q:p]))
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 		if(p-q>28):
-			q= p 
+			instr_key[str(q/2)]	= "BAD BYTE"
+			q+=2 
+			p = q
 		if(p <= len(hexdig)):
 			p += 2
 		else:
@@ -130,6 +130,9 @@ while True:
 q = 0 # tracks header pointer
 p = 2 # tracks tail pointer
 
+#count number of bad bytes
+bad_c = 0
+instruction_offset = 0
 #random starting point to determine realignment calculation
 q = random.randint(0, len(hexdig)-1)
 if q%2 == 1:
@@ -137,17 +140,20 @@ if q%2 == 1:
 intial_q = q
 p = q+2 
 
+if intial_q == len(hexdig):
+	instruction_offset = intial_q/2
+
 #create a dictionary for comparison
 instr_test = dict()
 print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-print "STARTING FILE AT " + str(q)
+print "STARTING FILE AT " + str(q/2)
 
-if q <= len(hexdig):
+if q < len(hexdig):
 	while True:
 		try:
 			xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
-			#print hexdig[q:p]
-			if(p == len(hexdig)):
+			print hexdig[q:p]
+			if(q == len(hexdig)):
 				break
 			xed.runtime_address = 0x00000000 + q/2
 			inst = xed.decode()							# decodes bytes between header and tail	
@@ -165,13 +171,16 @@ if q <= len(hexdig):
 			continue
 		except:
 			if(debug == 1):
-				#print "Oops!  That was not a valid decode.  Try again..."
-				#print "p: "+ str(p) + " q: " + str(q) + " | "+hexdig[q:p]
+				print "Oops!  That was not a valid decode.  Try again..."
+				print "p: "+ str(p) + " q: " + str(q) + " | "+hexdig[q:p]
 				print "LENGEHTH: " + str(len(hexdig[q:p]))
 			xed = pyxed.Decoder()
 			xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 			if(p-q>28):
-				q= p 
+				instr_key[str(q/2)]	= "BAD BYTE"
+				bad_c +=1
+				q+=2
+				p = q
 			if(p <= len(hexdig)):
 				p += 2
 			else:
@@ -184,8 +193,7 @@ for key in sorted(instr_key):
     print "%s: %s" % (key,instr_key[key])
 
 found_align = 0
-instruction_offset = 0
-	
+
 print "CONTENTS OF TEST DICTONARY"
 for key in sorted(instr_test):
 	if instr_key.has_key(key) and not(found_align):
@@ -193,4 +201,5 @@ for key in sorted(instr_test):
 		instruction_offset = int(key,16)
 	print "%s: %s" % (key,instr_test[key])
 
-print "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "	
+print "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "
+print "NUMBER OF INVALID BYTES: " + str(bad_c) +"."	
