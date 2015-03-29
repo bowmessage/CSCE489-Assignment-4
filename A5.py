@@ -146,8 +146,9 @@ if intial_q == len(hexdig):
 
 #create a dictionary for comparison
 instr_test = dict()
-print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-print ("STARTING FILE AT " + str(q/2))
+if(debug < 5):
+	print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+	print ("STARTING FILE AT " + str(q/2))
 
 if q < len(hexdig):
 	while True:
@@ -203,7 +204,7 @@ for key in sorted(instr_test):
 		instruction_offset = int(key,16)
 	if(debug < 5):
 		print ("%s: %s" % (key,instr_test[key]))
-print ("intial q " + str(intial_q/2) + " inst offset "+ str(instruction_offset))
+
 print ("NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. ")
 print ("NUMBER OF INVALID BYTES: " + str(bad_c) +".")	
 
