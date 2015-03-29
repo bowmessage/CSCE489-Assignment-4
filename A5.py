@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*- 
 
-import os, sys, subprocess, signal, base64, array, binascii, random
+import os, sys, subprocess, signal, base64, array, binascii, random, re
 from subprocess import Popen, PIPE
-
 import pyxed
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
@@ -203,3 +205,43 @@ for key in sorted(instr_test):
 
 print("NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. ")
 print("NUMBER OF INVALID BYTES: " + str(bad_c) +"."	)
+
+
+
+opcode_histogram = dict()
+for key in instr_key:
+	opcode = re.search("^([\w\-]+)",instr_key[key]).group(0)
+	if opcode in opcode_histogram:
+		opcode_histogram[opcode] += 1
+	else:
+		opcode_histogram[opcode] = 1
+
+N = len(opcode_histogram)
+
+
+ind = np.arange(N)  # the x locations for the groups
+width = 0.35       # the width of the bars
+
+fig, ax = plt.subplots()
+rects1 = ax.bar(ind, opcode_histogram.values(), width, color='r')
+
+# add some text for labels, title and axes ticks
+ax.set_ylabel('Instructions')
+ax.set_title('Instructions by opcode')
+ax.set_xticks(ind+width)
+
+opcodes = opcode_histogram.keys()
+ax.set_xticklabels( opcodes )
+
+#ax.legend( (rects1[0]), ('Instructions') )
+
+def autolabel(rects):
+    # attach some text labels
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
+                ha='center', va='bottom')
+
+autolabel(rects1)
+
+plt.show()
