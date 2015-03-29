@@ -16,14 +16,19 @@ with open(filename, 'rb') as f:
     content = f.read()
 binhex = binascii.hexlify(content);
 
-
+m = re.search('50450000', binhex)
+print hex(int(m.start())/2)
+# reading location of code
+print binhex[m.start()+56*2:m.start()+56*2+8]
+# reading location of data
+print binhex[m.start()+56*2+8:m.start()+56*2+16]
 
 #////////////////////////////////////////////////////////////////////HEX DUMP//////////////////////////////////////////////////////////////////////
 # FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
 '''
 print ("ADDRESS	")
 i = 0
-while i < len(binhex):
+while i < len(binhex[0:1000]):
 	if(i%32==0):
 		print (format(i/2, 'x').zfill(8)+ ": "), 
 	sys.stdout.write(binhex[i])
@@ -59,6 +64,11 @@ while i < (len(binhex)-1):
 #////////////////////////////////////////////////////////////////////INST DUMP//////////////////////////////////////////////////////////////////////
 # FLAG CREATION TO ARG 3, Instruction Dump
 binhex_begin = 0
+
+# LOOK FOR WHERE CODE SECTION BEGINS
+if(m.start()<500):
+	binhex_begin = int(m.start())/2
+
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
