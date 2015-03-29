@@ -7,7 +7,7 @@ import pyxed
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
-debug = 1
+debug = 0
 
 # REPLACE WITH ARG2
 #filename = 'A5.py'
@@ -62,6 +62,7 @@ while i < (len(binhex)-1):
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
+hexdig = binhex
 xed.itext = binascii.unhexlify(hexdig)
 xed.runtime_address = 0x00000000
 
@@ -110,10 +111,13 @@ while True:
 		continue
 	except:
 		if(debug == 1):
-			print "Oops!  That was not a valid decode.  Try again..."
-			print "p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p]
+			#print "Oops!  That was not a valid decode.  Try again..."
+			#print "p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p]
+			print "LENGEHTH: " + str(len(hexdig[q:p]))
 		xed = pyxed.Decoder()
 		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+		if(p-q>28):
+			q= p 
 		if(p <= len(hexdig)):
 			p += 2
 		else:
@@ -161,10 +165,13 @@ if q <= len(hexdig):
 			continue
 		except:
 			if(debug == 1):
-				print "Oops!  That was not a valid decode.  Try again..."
-				print "p: "+ str(p) + " q: " + str(q) + " | "+hexdig[q:p]
+				#print "Oops!  That was not a valid decode.  Try again..."
+				#print "p: "+ str(p) + " q: " + str(q) + " | "+hexdig[q:p]
+				print "LENGEHTH: " + str(len(hexdig[q:p]))
 			xed = pyxed.Decoder()
 			xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+			if(p-q>28):
+				q= p 
 			if(p <= len(hexdig)):
 				p += 2
 			else:
