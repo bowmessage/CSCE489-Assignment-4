@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-import os, sys, subprocess, signal, base64, array, binascii, random, re
+import os, sys, subprocess, signal, base64, array, binascii, random, re, math
 from subprocess import Popen, PIPE
 import pyxed
 
@@ -9,7 +9,17 @@ import matplotlib.pyplot as plt
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
-debug = 6
+debug = 4
+#////////////////////////////////////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////////////////
+def reverse_hex(original):
+	hex1= original[0] + original[1]
+	hex2= original[2] + original[3]
+	hex3= original[4] + original[5]
+	hex4= original[6] + original[7]
+	return hex4 + hex3 + hex2 + hex1
+
+	
+#////////////////////////////////////////////////////////////////////MAIN//////////////////////////////////////////////////////////////////////
 
 # REPLACE WITH ARG2
 #filename = 'A5.py'
@@ -21,9 +31,15 @@ binhex = binascii.hexlify(content);
 m = re.search('50450000', binhex)
 print hex(int(m.start())/2)
 # reading location of code
-print binhex[m.start()+56*2:m.start()+56*2+8]
+print "code:"
+print binhex[m.start()+44*2:m.start()+44*2+8]
+code = reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8])
+print code
 # reading location of data
-print binhex[m.start()+56*2+8:m.start()+56*2+16]
+print "data:"
+print binhex[m.start()+48*2:m.start()+48*2+8]
+data = reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8])
+print data
 
 #////////////////////////////////////////////////////////////////////HEX DUMP//////////////////////////////////////////////////////////////////////
 # FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
@@ -70,11 +86,18 @@ binhex_begin = 0
 # LOOK FOR WHERE CODE SECTION BEGINS
 if(m.start()<500):
 	binhex_begin = int(m.start())/2
-
+print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
+data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
+binhex_code = binhex[data_begin_addr:]
+print binhex_code[:64]
+#print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
+code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
+binhex_code = binhex[code_begin_addr:data_begin_addr]
+print binhex_code[:64]
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
-hexdig = binhex[binhex_begin:]
+hexdig = binhex_code
 xed.itext = binascii.unhexlify(hexdig)
 xed.runtime_address = 0x00000000
 
@@ -203,8 +226,10 @@ if q < len(hexdig):
 if(debug < 5):
 	# A KEY OF CORRECT PARSING TO COMPARE TO
 	print ("CONTENTS OF KEY DICTONARY")
+	f = open('Assembly.txt','w')
 	for key in sorted(instr_key):
-		print ("%s: %s" % (key,instr_key[key]))
+		f.write("%s: %s" % (key,instr_key[key]))
+	f.close()
 
 found_align = 0
 if(debug < 5):
