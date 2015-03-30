@@ -97,6 +97,8 @@ if(m.start()<500):
 	k += 8
 	print "SYMBOL TABLE ADDRESS: " + binhex[k:k+8]
 	k+=8
+	print "NUMBER OF SYMBOLS: " + binhex[k:k+8]
+	k+=8
 	print "Optional Header Size: " + binhex[k:k+4]
 	k += 4 
 	print "CHARACTERISTICs: " + binhex[k:k+4]
@@ -109,13 +111,24 @@ if(m.start()<500):
 	k += 2
 	print "Size Of Code: " + binhex[k:k+8]
 	k+=8
+	print "Size Of Initialized Data: " + binhex[k:k+8]
+	k+=8
+	print "Size of Uninitialized Data: " + binhex[k:k+8]
+	k+=8
+	print "Entry Point Address: " + binhex[k:k+8]
+	k+=8
+	print "Base Of Code: " + binhex[k:k+8]
+	k+=8
+	print "Base of Data: " + binhex[k:k+8]
+	k+=8
 	
 print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
 data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
 binhex_code = binhex[data_begin_addr:]
 print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
 code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
-binhex_code = binhex[code_begin_addr:data_begin_addr]
+#binhex_code = binhex[code_begin_addr:data_begin_addr]
+binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00]
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
