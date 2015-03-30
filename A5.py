@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # 1 for instructions, and invalid output
 # 3 for instructions only
-debug = 4
+debug = 5
 #////////////////////////////////////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////////////////
 def reverse_hex(original):
 	hex1= original[0] + original[1]
@@ -86,14 +86,36 @@ binhex_begin = 0
 # LOOK FOR WHERE CODE SECTION BEGINS
 if(m.start()<500):
 	binhex_begin = int(m.start())/2
+	k = int(m.start())
+	print "PE HEADER: " + binhex[k: k+8]
+	k += 8
+	print "MACHINE: " + binhex[k:k+4]
+	k += 4 
+	print "NUMBER OF SECTIONS: " + binhex[k:k+4]
+	k += 4
+	print "TIMEDATESTAMP: " + binhex[k:k+8]
+	k += 8
+	print "SYMBOL TABLE ADDRESS: " + binhex[k:k+8]
+	k+=8
+	print "Optional Header Size: " + binhex[k:k+4]
+	k += 4 
+	print "CHARACTERISTICs: " + binhex[k:k+4]
+	k += 4
+	print "Magic Number: " + binhex[k:k+4]
+	k += 4
+	print "Major Linker Version: " + binhex[k:k+2]
+	k += 2
+	print "Minor Linker Version: " + binhex[k:k+2]
+	k += 2
+	print "Size Of Code: " + binhex[k:k+8]
+	k+=8
+	
 print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
 data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
 binhex_code = binhex[data_begin_addr:]
-print binhex_code[:64]
-#print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
+print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
 code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
 binhex_code = binhex[code_begin_addr:data_begin_addr]
-print binhex_code[:64]
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
@@ -215,7 +237,7 @@ if q < len(hexdig):
 			xed = pyxed.Decoder()
 			xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 			if(p-q>28):
-				instr_key[str(q/2)]	= "BAD BYTE"
+				instr_key[str(format(q/2, 'x').zfill(8)) ]	= "BAD BYTE"
 				q+=2
 				p = q
 			if(p <= len(hexdig)):
@@ -223,12 +245,12 @@ if q < len(hexdig):
 			else:
 				break
 			continue
-if(debug < 5):
+if(debug <= 5):
 	# A KEY OF CORRECT PARSING TO COMPARE TO
 	print ("CONTENTS OF KEY DICTONARY")
 	f = open('Assembly.txt','w')
 	for key in sorted(instr_key):
-		f.write("%s: %s" % (key,instr_key[key]))
+		f.write("%s: %s\n" % (key,instr_key[key]))
 	f.close()
 
 found_align = 0
@@ -244,10 +266,6 @@ for key in sorted(instr_test):
 
 print ("NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. ")
 print ("NUMBER OF INVALID BYTES: " + str(bad_c) +".")	
-
-print("NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. ")
-print("NUMBER OF INVALID BYTES: " + str(bad_c) +"."	)
-
 
 
 opcode_histogram = dict()
