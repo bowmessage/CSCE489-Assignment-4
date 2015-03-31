@@ -135,23 +135,15 @@ def decode_main(filename):
 	print  int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]),16)
 	code_begin_addr = int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]),16)*2
 	#binhex_code = binhex[code_begin_addr:data_begin_addr]
-	binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00]
+	#binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00]
+	#code_begin_addr = 2080
+	#code_begin_addr = 4096*2
+	binhex_code = binhex[code_begin_addr:code_begin_addr+0x703EF*2]
 	xed = pyxed.Decoder()
 	xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-	hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
 	hexdig = binhex_code
 	xed.itext = binascii.unhexlify(hexdig)
 	xed.runtime_address = 0x00000000
-
-	#/////////////////////////////////////////////////////////////////////FULLY RUNS INSTRUCTION FOR FULL BINARY
-	'''
-	while True:
-		inst = xed.decode()
-		if inst is None:
-			break
-		out += "\n" +  (inst.dump_intel_format())
-
-	'''
 
 	#/////////////////////////////////////////////////////////////////////Run Instructions Byte by Byte to create a Answer Key
 	q = 0 # tracks header pointer
@@ -291,13 +283,13 @@ def decode_main(filename):
 	ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
 	starting_code = str(int(code_base) + int(image_base))
 	ep_ava = ep+pe.OPTIONAL_HEADER.ImageBase
-	data = pe.get_memory_mapped_image()[16+ep-(ep_ava - (int(starting_code,16))):ep+1036286]
+	data = pe.get_memory_mapped_image()[ep-(ep_ava - (int(starting_code,16))):ep+0xffffffff]
 	offset = 0
 	p = open('Assembly_pefile.txt','w')
 	while offset < len(data):
 		i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
 		if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
-			p.write(str(format((int(starting_code,16))+offset+16,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
+			p.write(str(format((int(starting_code,16))+offset,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
 			#out += "\n" +  "one"
 			offset += i.length
 		else:
