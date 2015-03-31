@@ -89,9 +89,9 @@ def decode_main(filename):
 	# FLAG CREATION TO ARG 3, Instruction Dump
 	binhex_begin = 0
 
-	
+	print(m.start())
 	# LOOK FOR WHERE CODE SECTION BEGINS
-	if(m.start()<500):
+	if(m.start()<1024):
 		binhex_begin = int(m.start())/2
 		k = int(m.start())
 		out += "\n" +  "PE HEADER: " + reverse_hex(binhex[k: k+8])
@@ -133,12 +133,11 @@ def decode_main(filename):
 		out += "\n" +  "IMAGE BASE: " + image_base
 		k+=8
 	
-		
-	out += "\n" +  str(int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16))
-	data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
+	print int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]),16)
+	data_begin_addr =  int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]),16)*2
 	binhex_code = binhex[data_begin_addr:]
-	out += "\n" +  str(int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16))
-	code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
+	print  int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]),16)
+	code_begin_addr = int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]),16)*2
 	#binhex_code = binhex[code_begin_addr:data_begin_addr]
 	binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00]
 	xed = pyxed.Decoder()
