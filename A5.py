@@ -24,181 +24,6 @@ def reverse_hex(original):
 	
 #////////////////////////////////////////////////////////////////////MAIN//////////////////////////////////////////////////////////////////////
 
-# REPLACE WITH ARG2
-#filename = 'A5.py'
-filename = 'codebreaker2.exe'
-with open(filename, 'rb') as f:
-    content = f.read()
-binhex = binascii.hexlify(content);
-
-m = re.search('50450000', binhex)
-print hex(int(m.start())/2)
-# reading location of code
-print "code:"
-print binhex[m.start()+44*2:m.start()+44*2+8]
-code = reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8])
-print code
-# reading location of data
-print "data:"
-print binhex[m.start()+48*2:m.start()+48*2+8]
-data = reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8])
-print data
-
-#////////////////////////////////////////////////////////////////////HEX DUMP//////////////////////////////////////////////////////////////////////
-# FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
-'''
-print ("ADDRESS	")
-i = 0
-while i < len(binhex[0:1000]):
-	if(i%32==0):
-		print (format(i/2, 'x').zfill(8)+ ": "), 
-	sys.stdout.write(binhex[i])
-	if(i%2==1):
-		sys.stdout.write(" ")
-	if(i%32==31):
-		print ("")
-	i += 1
-'''
-#////////////////////////////////////////////////////////////////////OBJ DUMP//////////////////////////////////////////////////////////////////////
-# FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
-'''
-print ("ADDRESS	")
-i = 0
-while i < (len(binhex)-1):
-	if(i%32==0):
-		print( format(i/2, 'x').zfill(8)+ ": "), 
-	hexstr = binhex[i]+binhex[i+1]
-	#print (binhex[i]+binhex[i+1])
-	#print( hexstr.decode("hex")),
-	if( int(hexstr,16) > 15 and (int(hexstr,16) < 120 or int(hexstr,16) > 254)) :
-		#print (int(hexstr,16)),
-		print( unichr(int(hexstr,16))),
-	else:
-		print ("."),
-	if(i%2==2):
-		sys.stdout.write(" ")
-	if(i%32==30):
-		print ("")
-	i += 2	
-'''
-
-#////////////////////////////////////////////////////////////////////INST DUMP//////////////////////////////////////////////////////////////////////
-# FLAG CREATION TO ARG 3, Instruction Dump
-binhex_begin = 0
-
-# LOOK FOR WHERE CODE SECTION BEGINS
-if(m.start()<500):
-	binhex_begin = int(m.start())/2
-	k = int(m.start())
-	print "PE HEADER: " + reverse_hex(binhex[k: k+8])
-	k += 8
-	print "MACHINE: " + binhex[k+2:k+4] + binhex[k:k+2]
-	k += 4 
-	print "NUMBER OF SECTIONS: " + binhex[k+2:k+4] + binhex[k:k+2]
-	k += 4
-	print "TIMEDATESTAMP: " + reverse_hex(binhex[k:k+8])
-	k += 8
-	print "SYMBOL TABLE ADDRESS: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	print "NUMBER OF SYMBOLS: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	print "Optional Header Size: " + binhex[k+2:k+4] + binhex[k:k+2]
-	k += 4 
-	print "CHARACTERISTICs: " + binhex[k+2:k+4] + binhex[k:k+2]
-	k += 4
-	print "Magic Number: " + binhex[k+2:k+4] + binhex[k:k+2]
-	k += 4
-	print "Major Linker Version: " + binhex[k:k+2]
-	k += 2
-	print "Minor Linker Version: " + binhex[k:k+2]
-	k += 2
-	print "Size Of Code: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	print "Size Of Initialized Data: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	print "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	print "Entry Point Address: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	code_base = reverse_hex(binhex[k:k+8])
-	print "Base Of Code: " + code_base
-	k+=8
-	print "Base of Data: " + reverse_hex(binhex[k:k+8])
-	k+=8
-	image_base = reverse_hex(binhex[k:k+8])
-	print "IMAGE BASE: " + image_base
-	k+=8
-	
-#print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
-data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
-binhex_code = binhex[data_begin_addr:]
-#print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
-code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
-binhex_code = binhex[code_begin_addr:data_begin_addr]
-#binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00*2]
-xed = pyxed.Decoder()
-xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
-hexdig = binhex_code
-xed.itext = binascii.unhexlify(hexdig)
-xed.runtime_address = 0x00000000
-
-#/////////////////////////////////////////////////////////////////////FULLY RUNS INSTRUCTION FOR FULL BINARY
-'''
-while True:
-	inst = xed.decode()
-	if inst is None:
-		break
-	print (inst.dump_intel_format())
-
-'''
-
-#/////////////////////////////////////////////////////////////////////Run Instructions Byte by Byte to create a Answer Key
-q = 0 # tracks header pointer
-p = 2 # tracks tail pointer
-# hex string to track for testing
-
-#SET HEXDIG to file input
-#hexdig = binhex
-
-instr_key = dict()
-bad_c = 0
-#loop through until terminate where p == q 
-while True:
-	try:
-		xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
-		if(debug == 4):
-			print (hexdig[q:p])
-		if(q == len(hexdig)):
-			break
-		xed.runtime_address = 0x00000000 + q/2
-		inst = xed.decode()							# decodes bytes between header and tail	
-		instr_str = inst.dump_intel_format()
-		if(debug == 2):
-			print (" Address: " + instr_str[:8] + " Instruction: " + instr_str[9:])
-		instr_key[instr_str[:8]]	= instr_str[9:]
-		if(debug == 1):
-			print (instr_str)							# dumps sucessful translation
-		xed = pyxed.Decoder()
-		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-		xed.runtime_address = 0x00000000 + q/2
-		q = p 										# move head to tail
-		p = q + 2
-		continue
-	except:
-		if(debug == 3):
-			print ("Oops!  That was not a valid decode.  Try again...")
-			print ("p: "+ str(p) + " q: " + str(q) + " | "+ hexdig[q:p])
-			print ("LENGEHTH: " + str(len(hexdig[q:p])))
-		xed = pyxed.Decoder()
-		xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
-		if(p-q>28):
-			instr_key[str(q/2)]	= "BAD BYTE"
-			bad_c +=1
-			q+=2 
-			p = q
-		if(p <= len(hexdig)):
-			p += 2
 def decode_main(filename):
 	out = ""
 	#////////////////////////////////////////////////////////////////////MAIN//////////////////////////////////////////////////////////////////////
@@ -264,44 +89,50 @@ def decode_main(filename):
 	# FLAG CREATION TO ARG 3, Instruction Dump
 	binhex_begin = 0
 
+	
 	# LOOK FOR WHERE CODE SECTION BEGINS
 	if(m.start()<500):
 		binhex_begin = int(m.start())/2
 		k = int(m.start())
-		out += "\n" +  "PE HEADER: " + binhex[k: k+8]
+		print "PE HEADER: " + reverse_hex(binhex[k: k+8])
 		k += 8
-		out += "\n" +  "MACHINE: " + binhex[k:k+4]
+		print "MACHINE: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4 
-		out += "\n" +  "NUMBER OF SECTIONS: " + binhex[k:k+4]
+		print "NUMBER OF SECTIONS: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		out += "\n" +  "TIMEDATESTAMP: " + binhex[k:k+8]
+		print "TIMEDATESTAMP: " + reverse_hex(binhex[k:k+8])
 		k += 8
-		out += "\n" +  "SYMBOL TABLE ADDRESS: " + binhex[k:k+8]
+		print "SYMBOL TABLE ADDRESS: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "NUMBER OF SYMBOLS: " + binhex[k:k+8]
+		print "NUMBER OF SYMBOLS: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "Optional Header Size: " + binhex[k:k+4]
+		print "Optional Header Size: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4 
-		out += "\n" +  "CHARACTERISTICs: " + binhex[k:k+4]
+		print "CHARACTERISTICs: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		out += "\n" +  "Magic Number: " + binhex[k:k+4]
+		print "Magic Number: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		out += "\n" +  "Major Linker Version: " + binhex[k:k+2]
+		print "Major Linker Version: " + binhex[k:k+2]
 		k += 2
-		out += "\n" +  "Minor Linker Version: " + binhex[k:k+2]
+		print "Minor Linker Version: " + binhex[k:k+2]
 		k += 2
-		out += "\n" +  "Size Of Code: " + binhex[k:k+8]
+		print "Size Of Code: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "Size Of Initialized Data: " + binhex[k:k+8]
+		print "Size Of Initialized Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "Size of Uninitialized Data: " + binhex[k:k+8]
+		print "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "Entry Point Address: " + binhex[k:k+8]
+		print "Entry Point Address: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		out += "\n" +  "Base Of Code: " + binhex[k:k+8]
+		code_base = reverse_hex(binhex[k:k+8])
+		print "Base Of Code: " + code_base
 		k+=8
-		out += "\n" +  "Base of Data: " + binhex[k:k+8]
+		print "Base of Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
+		image_base = reverse_hex(binhex[k:k+8])
+		print "IMAGE BASE: " + image_base
+		k+=8
+	
 		
 	out += "\n" +  str(int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16))
 	data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
@@ -459,26 +290,27 @@ def decode_main(filename):
 			out += "\n" +  "%s: %s" % (key,instr_test[key])
 	out += "\n" +  "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "
 	out += "\n" +  "NUMBER OF INVALID BYTES: " + str(bad_c) +"."
+				
+	#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	pe =  pefile.PE(filename)
+	ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+	starting_code = str(int(code_base) + int(image_base))
+	ep_ava = ep+pe.OPTIONAL_HEADER.ImageBase
+	data = pe.get_memory_mapped_image()[16+ep-(ep_ava - (int(starting_code,16))):ep+1036286]
+	offset = 0
+	p = open('Assembly_pefile.txt','w')
+	while offset < len(data):
+		i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
+		if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
+			p.write(str(format((int(starting_code,16))+offset+16,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
+			#print "one"
+			offset += i.length
+		else:
+			break
+	p.close()
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	return out
-			
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-pe =  pefile.PE(filename)
-ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
-starting_code = str(int(code_base) + int(image_base))
-ep_ava = ep+pe.OPTIONAL_HEADER.ImageBase
-data = pe.get_memory_mapped_image()[16+ep-(ep_ava - (int(starting_code,16))):ep+1036286]
-offset = 0
-p = open('Assembly_pefile.txt','w')
-while offset < len(data):
-  i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
-  if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
-     p.write(str(format((int(starting_code,16))+offset+16,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
-     #print "one"
-     offset += i.length
-  else:
-	  break
-p.close()
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def autolabel(rects):
     # attach some text labels

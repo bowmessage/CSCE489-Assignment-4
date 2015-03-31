@@ -4,3 +4,4 @@ six==1.9.0
 python-dateutil
 pyparsing
 pytz
+pyside==1.2.2
