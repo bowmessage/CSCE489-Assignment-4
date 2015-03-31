@@ -94,43 +94,43 @@ def decode_main(filename):
 	if(m.start()<500):
 		binhex_begin = int(m.start())/2
 		k = int(m.start())
-		print "PE HEADER: " + reverse_hex(binhex[k: k+8])
+		out += "\n" +  "PE HEADER: " + reverse_hex(binhex[k: k+8])
 		k += 8
-		print "MACHINE: " + binhex[k+2:k+4] + binhex[k:k+2]
+		out += "\n" +  "MACHINE: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4 
-		print "NUMBER OF SECTIONS: " + binhex[k+2:k+4] + binhex[k:k+2]
+		out += "\n" +  "NUMBER OF SECTIONS: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		print "TIMEDATESTAMP: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "TIMEDATESTAMP: " + reverse_hex(binhex[k:k+8])
 		k += 8
-		print "SYMBOL TABLE ADDRESS: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "SYMBOL TABLE ADDRESS: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		print "NUMBER OF SYMBOLS: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "NUMBER OF SYMBOLS: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		print "Optional Header Size: " + binhex[k+2:k+4] + binhex[k:k+2]
+		out += "\n" +  "Optional Header Size: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4 
-		print "CHARACTERISTICs: " + binhex[k+2:k+4] + binhex[k:k+2]
+		out += "\n" +  "CHARACTERISTICs: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		print "Magic Number: " + binhex[k+2:k+4] + binhex[k:k+2]
+		out += "\n" +  "Magic Number: " + binhex[k+2:k+4] + binhex[k:k+2]
 		k += 4
-		print "Major Linker Version: " + binhex[k:k+2]
+		out += "\n" +  "Major Linker Version: " + binhex[k:k+2]
 		k += 2
-		print "Minor Linker Version: " + binhex[k:k+2]
+		out += "\n" +  "Minor Linker Version: " + binhex[k:k+2]
 		k += 2
-		print "Size Of Code: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "Size Of Code: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		print "Size Of Initialized Data: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "Size Of Initialized Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		print "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
-		print "Entry Point Address: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "Entry Point Address: " + reverse_hex(binhex[k:k+8])
 		k+=8
 		code_base = reverse_hex(binhex[k:k+8])
-		print "Base Of Code: " + code_base
+		out += "\n" +  "Base Of Code: " + code_base
 		k+=8
-		print "Base of Data: " + reverse_hex(binhex[k:k+8])
+		out += "\n" +  "Base of Data: " + reverse_hex(binhex[k:k+8])
 		k+=8
 		image_base = reverse_hex(binhex[k:k+8])
-		print "IMAGE BASE: " + image_base
+		out += "\n" +  "IMAGE BASE: " + image_base
 		k+=8
 	
 		
@@ -303,7 +303,7 @@ def decode_main(filename):
 		i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
 		if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
 			p.write(str(format((int(starting_code,16))+offset+16,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
-			#print "one"
+			#out += "\n" +  "one"
 			offset += i.length
 		else:
 			break
