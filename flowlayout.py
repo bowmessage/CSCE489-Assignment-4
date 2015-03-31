@@ -18,23 +18,35 @@ class Window(QtGui.QWidget):
         self.setLayout(self.formLayout)
         self.setWindowTitle("Assignment 4")
 
+        self.fileNameLabel = QtGui.QLabel("File Name")
+        self.fileNameLabel.setAlignment(QtCore.Qt.AlignHCenter)
+        self.formLayout.addWidget(self.fileNameLabel)
+
+        self.decodeOutputArea = QtGui.QPlainTextEdit("Decoder output")
+        self.formLayout.addWidget(self.decodeOutputArea)
+
+        self.assemblyTxtArea = QtGui.QPlainTextEdit("assembly")
+        self.formLayout.addWidget(self.assemblyTxtArea)
+
+        self.assemblyPeTxtArea = QtGui.QPlainTextEdit("assembly_pefile")
+        self.formLayout.addWidget(self.assemblyPeTxtArea)
+
     def showDialog(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self,"Open Image", "", "Executable Files (*.exe)")
 
-        self.decodeOutputArea = QtGui.QPlainTextEdit(decode_main(fileName[0]))
-        self.formLayout.addWidget(self.decodeOutputArea)
+        self.fileNameLabel.setText(fileName[0])
+        self.decodeOutputArea.setPlainText(decode_main(fileName[0]))
+        
 
         with open ("Assembly.txt", "r") as f:
             assemblyTxt=f.read()
-            self.assemblyTxtArea = QtGui.QPlainTextEdit(assemblyTxt)
-            self.formLayout.addWidget(self.assemblyTxtArea)
+            self.assemblyTxtArea.setPlainText(assemblyTxt)
+            
+
         with open ("Assembly_pefile.txt", "r") as f:
             assemblyPeTxt=f.read()
-            self.assemblyPeTxtArea = QtGui.QPlainTextEdit(assemblyPeTxt)
-            self.formLayout.addWidget(self.assemblyPeTxtArea)
-
-
-        self.textArea.adjustSize()
+            self.assemblyPeTxtArea.setPlainText(assemblyPeTxt)
+            
 
 if __name__ == '__main__':
 
