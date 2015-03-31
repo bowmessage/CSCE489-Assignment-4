@@ -2,7 +2,7 @@
 
 import os, sys, subprocess, signal, base64, array, binascii, random, re, math
 from subprocess import Popen, PIPE
-import pyxed
+import pyxed, pydasm, pefile
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -87,48 +87,52 @@ binhex_begin = 0
 if(m.start()<500):
 	binhex_begin = int(m.start())/2
 	k = int(m.start())
-	print "PE HEADER: " + binhex[k: k+8]
+	print "PE HEADER: " + reverse_hex(binhex[k: k+8])
 	k += 8
-	print "MACHINE: " + binhex[k:k+4]
+	print "MACHINE: " + binhex[k+2:k+4] + binhex[k:k+2]
 	k += 4 
-	print "NUMBER OF SECTIONS: " + binhex[k:k+4]
+	print "NUMBER OF SECTIONS: " + binhex[k+2:k+4] + binhex[k:k+2]
 	k += 4
-	print "TIMEDATESTAMP: " + binhex[k:k+8]
+	print "TIMEDATESTAMP: " + reverse_hex(binhex[k:k+8])
 	k += 8
-	print "SYMBOL TABLE ADDRESS: " + binhex[k:k+8]
+	print "SYMBOL TABLE ADDRESS: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "NUMBER OF SYMBOLS: " + binhex[k:k+8]
+	print "NUMBER OF SYMBOLS: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "Optional Header Size: " + binhex[k:k+4]
+	print "Optional Header Size: " + binhex[k+2:k+4] + binhex[k:k+2]
 	k += 4 
-	print "CHARACTERISTICs: " + binhex[k:k+4]
+	print "CHARACTERISTICs: " + binhex[k+2:k+4] + binhex[k:k+2]
 	k += 4
-	print "Magic Number: " + binhex[k:k+4]
+	print "Magic Number: " + binhex[k+2:k+4] + binhex[k:k+2]
 	k += 4
 	print "Major Linker Version: " + binhex[k:k+2]
 	k += 2
 	print "Minor Linker Version: " + binhex[k:k+2]
 	k += 2
-	print "Size Of Code: " + binhex[k:k+8]
+	print "Size Of Code: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "Size Of Initialized Data: " + binhex[k:k+8]
+	print "Size Of Initialized Data: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "Size of Uninitialized Data: " + binhex[k:k+8]
+	print "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "Entry Point Address: " + binhex[k:k+8]
+	print "Entry Point Address: " + reverse_hex(binhex[k:k+8])
 	k+=8
-	print "Base Of Code: " + binhex[k:k+8]
+	code_base = reverse_hex(binhex[k:k+8])
+	print "Base Of Code: " + code_base
 	k+=8
-	print "Base of Data: " + binhex[k:k+8]
+	print "Base of Data: " + reverse_hex(binhex[k:k+8])
+	k+=8
+	image_base = reverse_hex(binhex[k:k+8])
+	print "IMAGE BASE: " + image_base
 	k+=8
 	
-print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
+#print int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)
 data_begin_addr =  int(str(int(reverse_hex(binhex[m.start()+48*2:m.start()+48*2+8]))),16)*2
 binhex_code = binhex[data_begin_addr:]
-print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
+#print int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)
 code_begin_addr = int(str(int(reverse_hex(binhex[m.start()+44*2:m.start()+44*2+8]))),16)*2
-#binhex_code = binhex[code_begin_addr:data_begin_addr]
-binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00]
+binhex_code = binhex[code_begin_addr:data_begin_addr]
+#binhex_code = binhex[code_begin_addr:code_begin_addr+0x3fa00*2]
 xed = pyxed.Decoder()
 xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
 hexdig = "5531D289E58B4508568B750C538D58FF0FB60C16884C130183C20184C975F15B5E5DC3"
@@ -280,6 +284,24 @@ for key in sorted(instr_test):
 print ("NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. ")
 print ("NUMBER OF INVALID BYTES: " + str(bad_c) +".")	
 
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+pe =  pefile.PE(filename)
+ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+starting_code = str(int(code_base) + int(image_base))
+ep_ava = ep+pe.OPTIONAL_HEADER.ImageBase
+data = pe.get_memory_mapped_image()[16+ep-(ep_ava - (int(starting_code,16))):ep+1036286]
+offset = 0
+p = open('Assembly_pefile.txt','w')
+while offset < len(data):
+  i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
+  if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
+     p.write(str(format((int(starting_code,16))+offset+16,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
+     #print "one"
+     offset += i.length
+  else:
+	  break
+p.close()
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 opcode_histogram = dict()
 for key in instr_key:
