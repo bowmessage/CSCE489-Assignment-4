@@ -28,7 +28,6 @@ def decode_main(filename):
 	out = ""
 	#////////////////////////////////////////////////////////////////////MAIN//////////////////////////////////////////////////////////////////////
 
-	# REPLACE WITH ARG2
 	#filename = 'A5.py'
 	with open(filename, 'rb') as f:
 	    content = f.read()
@@ -49,41 +48,38 @@ def decode_main(filename):
 
 	#////////////////////////////////////////////////////////////////////HEX DUMP//////////////////////////////////////////////////////////////////////
 	# FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
-	'''
-	out += "\n" +  ("ADDRESS	")
+	
+	hex_dump = open('Hex_Dump.txt','w')
 	i = 0
-	while i < len(binhex[0:1000]):
+	while i < len(binhex):
 		if(i%32==0):
-			out += "\n" +  (format(i/2, 'x').zfill(8)+ ": "), 
-		sys.stdout.write(binhex[i])
+			hex_dump.write(format(i/2, 'x').zfill(8)+ ": ") 
+		hex_dump.write(binhex[i])
 		if(i%2==1):
-			sys.stdout.write(" ")
+			hex_dump.write(" ")
 		if(i%32==31):
-			out += "\n" +  ("")
+			hex_dump.write("\n")
 		i += 1
-	'''
+	hex_dump.close()
 	#////////////////////////////////////////////////////////////////////OBJ DUMP//////////////////////////////////////////////////////////////////////
 	# FLAG CREATION TO ARG 2, CHANGE TO FILE DUMP
-	'''
-	out += "\n" +  ("ADDRESS	")
+	
+	ascii_dump = open('Ascii_Dump.txt','w')
 	i = 0
 	while i < (len(binhex)-1):
 		if(i%32==0):
-			out += "\n" + ( format(i/2, 'x').zfill(8)+ ": "), 
+			ascii_dump.write( format(i/2, 'x').zfill(8)+ ": ") 
 		hexstr = binhex[i]+binhex[i+1]
-		#out += "\n" +  (binhex[i]+binhex[i+1])
-		#out += "\n" + ( hexstr.decode("hex")),
-		if( int(hexstr,16) > 15 and (int(hexstr,16) < 120 or int(hexstr,16) > 254)) :
-			#out += "\n" +  (int(hexstr,16)),
-			out += "\n" + ( unichr(int(hexstr,16))),
+		if( int(hexstr,16) > 15 and (int(hexstr,16) < 254 or int(hexstr,16) > 254)) :
+			ascii_dump.write( unichr(int(hexstr,16)).encode('utf8'))
 		else:
-			out += "\n" +  ("."),
+			ascii_dump.write(".")
 		if(i%2==2):
-			sys.stdout.write(" ")
+			ascii_dump.write(" ")
 		if(i%32==30):
-			out += "\n" +  ("")
+			ascii_dump.write("\n")
 		i += 2	
-	'''
+	ascii_dump.close()
 
 	#////////////////////////////////////////////////////////////////////INST DUMP//////////////////////////////////////////////////////////////////////
 	# FLAG CREATION TO ARG 3, Instruction Dump
