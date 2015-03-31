@@ -20,9 +20,20 @@ class Window(QtGui.QWidget):
 
     def showDialog(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self,"Open Image", "", "Executable Files (*.exe)")
-        self.textArea = QtGui.QPlainTextEdit(decode_main(fileName[0]))
 
-        self.formLayout.addWidget(self.textArea)
+        self.decodeOutputArea = QtGui.QPlainTextEdit(decode_main(fileName[0]))
+        self.formLayout.addWidget(self.decodeOutputArea)
+
+        with open ("Assembly.txt", "r") as f:
+            assemblyTxt=f.read()
+            self.assemblyTxtArea = QtGui.QPlainTextEdit(assemblyTxt)
+            self.formLayout.addWidget(self.assemblyTxtArea)
+        with open ("Assembly_pefile.txt", "r") as f:
+            assemblyPeTxt=f.read()
+            self.assemblyPeTxtArea = QtGui.QPlainTextEdit(assemblyPeTxt)
+            self.formLayout.addWidget(self.assemblyPeTxtArea)
+
+
         self.textArea.adjustSize()
 
 if __name__ == '__main__':
