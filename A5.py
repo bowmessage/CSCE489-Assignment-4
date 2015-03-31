@@ -299,25 +299,16 @@ def decode_main(filename):
 
 	return out
 
-def autolabel(rects):
+def autolabel(ax, rects):
     # attach some text labels
     for rect in rects:
         height = rect.get_height()
         ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
                 ha='center', va='bottom')
 
-def showgraph():
-
-	opcode_histogram = dict()
-	for key in instr_key:
-		opcode = re.search("^([\w\-]+)",instr_key[key]).group(0)
-		if opcode in opcode_histogram:
-			opcode_histogram[opcode] += 1
-		else:
-			opcode_histogram[opcode] = 1
+def showgraph(opcode_histogram):
 
 	N = len(opcode_histogram)
-
 
 	ind = np.arange(N)  # the x locations for the groups
 	width = 0.35       # the width of the bars
@@ -337,13 +328,6 @@ def showgraph():
 
 
 
-	autolabel(rects1)
+	autolabel(ax, rects1)
 
 	plt.show()
-
-if __name__ == '__main__':
-
-    app = QtGui.QApplication(sys.argv)
-    mainWin = Window()
-    mainWin.show()
-    sys.exit(app.exec_())
