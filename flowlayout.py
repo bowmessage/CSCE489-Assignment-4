@@ -53,7 +53,7 @@ class Window(QtGui.QWidget):
 
     def showPeGraph(self):
       opcode_histogram = dict()
-      with open ("Assembly_pefile.txt", "r") as f:
+      with open ("Assemblyfile.txt", "r") as f:
         for line in f:
           m = re.search("^([\w]+): ([\w]+)", line)
           if m is not None:
@@ -70,7 +70,8 @@ class Window(QtGui.QWidget):
           'Control Flow': ['jz', 'jnz', 'cmp', 'jc', 'ret', 'test', 'jmp', 'je', 'jne', 'jg', 'jge', 'ja', 
                           'jae', 'jl', 'jle', 'jb', 'jbe', 'jo', 'jno', 'js', 'jns', 'call', 'loop', 'enter', 
                           'leave', 'hlt', 'nop', 'lock', 'wait', 'jnl', 'jna', 'jnc', 'jng', 'rep', 'repne' ],
-          'Data Transfer': ['mov', 'xchg', 'cmpxchg', 'movz', 'movzx', 'movs', 'movsx', 'movsb', 'lea', 'bswap', 'movsd', 'movne', 'cmove', 'cbw', 'cmovne'],
+          'Data Transfer': ['mov', 'xchg', 'cmpxchg', 'movz', 'movzx', 'movs', 'movsx', 'movsb', 'lea', 'bswap',
+                            'movsd', 'movne', 'cmove', 'cbw', 'cmovne'],
           'Shift and Rotate': ['shr', 'shl', 'sar', 'sal', 'shld', 'shrd', 'ror', 'rol', 'rcr', 'rcl'],
           'Stack Manipulation': ['push', 'pop', 'pushf', 'popf', 'pusha', 'popa', 'pushad', 'popad'],
           'Flags': ['sti', 'cli', 'std', 'cld', 'stc', 'clc', 'cmc', 'sahf', 'lahf', 'setz', 'setnz']
