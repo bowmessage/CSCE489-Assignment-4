@@ -57,7 +57,7 @@ class Window(QtGui.QWidget):
         for line in f:
           m = re.search("^([\w]+): ([\w]+)", line)
           if m is not None:
-			opcode = m.group(2)
+			      opcode = m.group(2)
           if opcode in opcode_histogram:
             opcode_histogram[opcode] += 1
           else:
@@ -77,6 +77,7 @@ class Window(QtGui.QWidget):
       }
 
       grouped_histogram = dict()
+      grouped_histogram['Other'] = 0
       for opcode in opcode_histogram:
         found = False
         for group in grouping:
@@ -88,7 +89,7 @@ class Window(QtGui.QWidget):
             found = True
             break
         if not found:
-          grouped_histogram[opcode] = opcode_histogram[opcode]
+          grouped_histogram['Other'] += opcode_histogram[opcode]
           
 
       showgraph(grouped_histogram)
