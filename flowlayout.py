@@ -55,7 +55,9 @@ class Window(QtGui.QWidget):
       opcode_histogram = dict()
       with open ("Assembly_pefile.txt", "r") as f:
         for line in f:
-          opcode = re.search("^([\w]+): ([\w]+)", line).group(2)
+          m = re.search("^([\w]+): ([\w]+)", line)
+          if m is not None:
+			opcode = m.group(2)
           if opcode in opcode_histogram:
             opcode_histogram[opcode] += 1
           else:
