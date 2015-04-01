@@ -281,9 +281,11 @@ def decode_main(filename):
 	for key in sorted(instr_test):
 		if instr_key.has_key(key) and not(found_align):
 			found_align = 1
-			instruction_offset = int(key,16)
+			instruction_offset = int(key,16) - int(image_base,16) - int(code_base,16) 
 		if(debug < 5):
 			out += "\n" +  "%s: %s" % (key,instr_test[key])
+	print intial_q/2
+	print instruction_offset
 	out += "\n" +  "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "
 	out += "\n" +  "NUMBER OF INVALID BYTES: " + str(bad_c) +"."
 				
