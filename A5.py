@@ -216,11 +216,11 @@ def decode_main(filename):
 	q = random.randint(0, len(hexdig)-1)
 	if q%2 == 1:
 		q+=1
-	intial_q = q
+	initial_q = q
 	p = q+2 
 
-	if intial_q == len(hexdig):
-		instruction_offset = intial_q/2
+	if initial_q == len(hexdig):
+		instruction_offset = initial_q/2
 
 	#create a dictionary for comparison
 	instr_test = dict()
@@ -266,6 +266,7 @@ def decode_main(filename):
 				else:
 					break
 				continue
+
 	if(debug <= 5):
 		# A KEY OF CORRECT PARSING TO COMPARE TO
 		out += "\n" +  "CONTENTS OF KEY DICTONARY"
@@ -284,10 +285,75 @@ def decode_main(filename):
 			instruction_offset = int(key,16) - int(image_base,16) - int(code_base,16) 
 		if(debug < 5):
 			out += "\n" +  "%s: %s" % (key,instr_test[key])
-	print intial_q/2
-	print instruction_offset
-	out += "\n" +  "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-intial_q/2) + " BYTES. "
+
+	out += "\n" +  "NUMBER OF BYTES TO ALIGNMENT: " + str(instruction_offset-initial_q/2) + " BYTES. "
 	out += "\n" +  "NUMBER OF INVALID BYTES: " + str(bad_c) +"."
+
+	num_bytes_align_sum = 0
+	num_bytes_align_arr = []
+
+	for i in range(0,10):
+		q = 0 # tracks header pointer
+		p = 2 # tracks tail pointer
+
+		#count number of bad bytes
+		instruction_offset = 0
+		#random starting point to determine realignment calculation
+		q = random.randint(0, len(hexdig)-1)
+		if q%2 == 1:
+			q+=1
+		initial_q = q
+		p = q+2 
+
+		if initial_q == len(hexdig):
+			instruction_offset = initial_q/2
+
+		#create a dictionary for comparison
+		instr_test = dict()
+
+		if q < len(hexdig):
+			while True:
+				try:
+					xed.itext = binascii.unhexlify(hexdig[q:p]) # decodes bytes between header and tail
+					if(q == len(hexdig)):
+						break
+					xed.runtime_address = 0x00000000 + q/2 + int(image_base, 16) + code_begin_addr
+					inst = xed.decode()							# decodes bytes between header and tail	
+					instr_str = inst.dump_intel_format()
+					instr_test[instr_str[:8]]	= instr_str[9:]
+					xed = pyxed.Decoder()
+					xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+					xed.runtime_address = 0x00000000 + q/2 + int(image_base, 16) + code_begin_addr
+					q = p 										# move head to tail
+					p = q + 2
+					continue
+				except:
+					xed = pyxed.Decoder()
+					xed.set_mode(pyxed.XED_MACHINE_MODE_LEGACY_32, pyxed.XED_ADDRESS_WIDTH_32b)
+					if(p-q>28):
+						instr_key[str(format(q/2, 'x').zfill(8)) ]	= "BAD BYTE"
+						q+=2
+						p = q
+					if(p <= len(hexdig)):
+						p += 2
+					else:
+						break
+					continue
+
+		found_align = 0
+
+		for key in sorted(instr_test):
+			if instr_key.has_key(key) and not(found_align):
+				found_align = 1
+				instruction_offset = int(key,16) - int(image_base,16) - int(code_base,16) 
+
+		num_bytes_align_sum += instruction_offset-initial_q/2
+		num_bytes_align_arr.append(instruction_offset-initial_q/2)
+
+	out += "\n" + "Trial results for number of bytes to align: \n"
+	for i in range(0, len(num_bytes_align_arr)):
+		out += str(num_bytes_align_arr[i]) + ", "
+	out += "\n" + "Average num bytes to align: " + str(num_bytes_align_sum / 10)
 				
 	if m is not None:
 		#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
