@@ -53,7 +53,7 @@ class Window(QtGui.QWidget):
 
     def showPeGraph(self):
       opcode_histogram = dict()
-      with open ("Assemblyfile.txt", "r") as f:
+      with open ("Assembly.txt", "r") as f:
         for line in f:
           m = re.search("^([\w]+): ([\w]+)", line)
           if m is not None:
