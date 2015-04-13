@@ -11,29 +11,55 @@ class Window(QtGui.QWidget):
 
     def __init__(self):
         super(Window, self).__init__()
+
         self.formLayout = QtGui.QFormLayout()
+
+        
+
+
         openFileButton = QtGui.QPushButton("Open File")
         openFileButton.clicked.connect(self.showDialog)
         self.formLayout.addWidget(openFileButton)
         self.setLayout(self.formLayout)
         self.setWindowTitle("Assignment 4")
 
+        self.tabWidget = QtGui.QTabWidget()
+
+
         self.fileNameLabel = QtGui.QLabel("File Name")
         self.fileNameLabel.setAlignment(QtCore.Qt.AlignHCenter)
         self.formLayout.addWidget(self.fileNameLabel)
 
+
+
         self.decodeOutputArea = QtGui.QPlainTextEdit("Decoder output")
-        self.formLayout.addWidget(self.decodeOutputArea)
+        self.tabWidget.addTab(self.decodeOutputArea, "Decoder Output")
 
         self.assemblyTxtArea = QtGui.QPlainTextEdit("assembly")
-        self.formLayout.addWidget(self.assemblyTxtArea)
+        #self.formLayout.addWidget(self.assemblyTxtArea)
+        self.tabWidget.addTab(self.assemblyTxtArea, "XED Output")
 
         self.assemblyPeTxtArea = QtGui.QPlainTextEdit("assembly_pefile")
-        self.formLayout.addWidget(self.assemblyPeTxtArea)
+        #self.formLayout.addWidget(self.assemblyPeTxtArea)
+        self.tabWidget.addTab(self.assemblyPeTxtArea, "PydASM Output")
 
         self.assemblyPeGraphButton = QtGui.QPushButton("Show Graph")
         self.assemblyPeGraphButton.clicked.connect(self.showPeGraph)
         self.formLayout.addWidget(self.assemblyPeGraphButton)
+
+        
+        
+        self.cfgScene = QtGui.QGraphicsScene(0,0,100,100)
+        self.cfgView = QtGui.QGraphicsView(self.cfgScene)
+        self.tabWidget.addTab(self.cfgView, "Graph View")
+
+
+
+        self.formLayout.addWidget(self.tabWidget)
+
+
+        #self.tabWidget.addTab(self.formLayout)
+        #self.
 
     def showDialog(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self,"Open Image", "", "Executable Files (*.exe)")
