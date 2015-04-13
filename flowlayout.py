@@ -5,17 +5,19 @@
 import sys, re
 from PySide import QtCore, QtGui
 from A5 import decode_main, showgraph
+from controlFlowGraph import CFGWidget
 
 
 class Window(QtGui.QWidget):
 
+
+
     def __init__(self):
         super(Window, self).__init__()
 
+        self.fileOpened = False
+
         self.formLayout = QtGui.QFormLayout()
-
-        
-
 
         openFileButton = QtGui.QPushButton("Open File")
         openFileButton.clicked.connect(self.showDialog)
@@ -28,7 +30,7 @@ class Window(QtGui.QWidget):
 
         self.fileNameLabel = QtGui.QLabel("File Name")
         self.fileNameLabel.setAlignment(QtCore.Qt.AlignHCenter)
-        self.formLayout.addWidget(self.fileNameLabel)
+        #self.formLayout.addWidget(self.fileNameLabel)
 
 
 
@@ -36,26 +38,22 @@ class Window(QtGui.QWidget):
         self.tabWidget.addTab(self.decodeOutputArea, "Decoder Output")
 
         self.assemblyTxtArea = QtGui.QPlainTextEdit("assembly")
-        #self.formLayout.addWidget(self.assemblyTxtArea)
         self.tabWidget.addTab(self.assemblyTxtArea, "XED Output")
 
         self.assemblyPeTxtArea = QtGui.QPlainTextEdit("assembly_pefile")
-        #self.formLayout.addWidget(self.assemblyPeTxtArea)
         self.tabWidget.addTab(self.assemblyPeTxtArea, "PydASM Output")
 
-        self.assemblyPeGraphButton = QtGui.QPushButton("Show Graph")
+        self.controlFlowGraph = CFGWidget()
+        self.tabWidget.addTab(self.controlFlowGraph, "Graph View")
+
+        self.tabWidget.setMinimumSize(500,500)
+        #self.formLayout.addWidget(self.tabWidget)
+
+
+        self.assemblyPeGraphButton = QtGui.QPushButton("Show Control Flow Graph")
         self.assemblyPeGraphButton.clicked.connect(self.showPeGraph)
-        self.formLayout.addWidget(self.assemblyPeGraphButton)
+        #self.formLayout.addWidget(self.assemblyPeGraphButton)
 
-        
-        
-        self.cfgScene = QtGui.QGraphicsScene(0,0,100,100)
-        self.cfgView = QtGui.QGraphicsView(self.cfgScene)
-        self.tabWidget.addTab(self.cfgView, "Graph View")
-
-
-
-        self.formLayout.addWidget(self.tabWidget)
 
 
         #self.tabWidget.addTab(self.formLayout)
@@ -76,6 +74,14 @@ class Window(QtGui.QWidget):
         with open ("Assembly_pefile.txt", "r") as f:
             assemblyPeTxt=f.read()
             self.assemblyPeTxtArea.setPlainText(assemblyPeTxt)
+
+        self.controlFlowGraph.setAssemblyText(self.assemblyPeTxtArea.toPlainText())
+
+        if not self.fileOpened:
+            self.formLayout.addWidget(self.fileNameLabel)
+            self.formLayout.addWidget(self.tabWidget)
+            self.formLayout.addWidget(self.assemblyPeGraphButton)
+            self.fileOpened = True
 
     def showPeGraph(self):
       opcode_histogram = dict()
