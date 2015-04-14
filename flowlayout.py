@@ -4,8 +4,9 @@
 
 import sys, re
 from PySide import QtCore, QtGui
-from A5 import decode_main, showgraph
+from A5 import decode_main, save_histogram_image 
 from controlFlowGraph import CFGWidget
+from graphWidget import GraphWidget
 
 
 class Window(QtGui.QWidget):
@@ -44,20 +45,14 @@ class Window(QtGui.QWidget):
         self.tabWidget.addTab(self.assemblyPeTxtArea, "PydASM Output")
 
         self.controlFlowGraph = CFGWidget()
-        self.tabWidget.addTab(self.controlFlowGraph, "Graph View")
+        self.tabWidget.addTab(self.controlFlowGraph, "Control Flow")
 
-        self.tabWidget.setMinimumSize(500,500)
-        #self.formLayout.addWidget(self.tabWidget)
+        self.graphWidget = GraphWidget()
+        self.tabWidget.addTab(self.graphWidget, "Statistics")
 
+        self.tabWidget.setMinimumSize(1800,1000)
+        self.showStatistics()
 
-        self.assemblyPeGraphButton = QtGui.QPushButton("Show Control Flow Graph")
-        self.assemblyPeGraphButton.clicked.connect(self.showPeGraph)
-        #self.formLayout.addWidget(self.assemblyPeGraphButton)
-
-
-
-        #self.tabWidget.addTab(self.formLayout)
-        #self.
 
     def showDialog(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self,"Open Image", "", "Executable Files (*.exe)")
@@ -83,7 +78,7 @@ class Window(QtGui.QWidget):
             self.formLayout.addWidget(self.assemblyPeGraphButton)
             self.fileOpened = True
 
-    def showPeGraph(self):
+    def showStatistics(self):
       opcode_histogram = dict()
       with open ("Assembly.txt", "r") as f:
         for line in f:
@@ -94,7 +89,7 @@ class Window(QtGui.QWidget):
             opcode_histogram[opcode] += 1
           else:
             opcode_histogram[opcode] = 1
-      showgraph(opcode_histogram)
+      #save_historgram_image(opcode_histogram)
 
       grouping = {
           'Arithmetic': ['add', 'sub', 'mul', 'imul', 'div', 'idiv', 'neg', 'adc', 'sbb', 'inc', 'dec', 'aaa', 'das'],
@@ -124,8 +119,8 @@ class Window(QtGui.QWidget):
         if not found:
           grouped_histogram['Other'] += opcode_histogram[opcode]
           
-
-      showgraph(grouped_histogram)
+      save_histogram_image(grouped_histogram, 'grouped.png')
+      self.graphWidget.showImage('grouped.png')
           
 
 if __name__ == '__main__':
