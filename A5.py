@@ -123,6 +123,7 @@ def decode_main(filename):
 			k+=8
 			out += "\n" +  "Size of Uninitialized Data: " + reverse_hex(binhex[k:k+8])
 			k+=8
+			entry_point = reverse_hex(binhex[k:k+8])
 			out += "\n" +  "Entry Point Address: " + reverse_hex(binhex[k:k+8])
 			k+=8
 			code_base = reverse_hex(binhex[k:k+8])
@@ -234,10 +235,6 @@ def decode_main(filename):
 		p.close()
 		'''
 		#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	p = open("CFG.txt",'w')
-	for x in sorted(instr_key):
-		p.write(x +":"+ instr_key[x]+"\n")
-	p.close()
 	 
 	# print sections and sizes
 	for section in pe.sections:
@@ -249,8 +246,66 @@ def decode_main(filename):
 	p.write( pe.dump_info())	
 	p.close()
 	#/////////////////////////////////////////////////////////////////////////////////////////////////////
+	#Declare a list for a list of entry points of basic blocks
+	CFG_entry = []
+	CFG_entry.append( hex(int(entry_point,16) + int(image_base,16)))
+	print "List = ",
+	print CFG_entry
 	
+	p = open("Assembly_pefile.txt", "r")
+	file_data = p.read()
+	m = re.findall(r"[0-9a-fA-F]{8}:.+", file_data)
+	p.close()
 	
+	# chop off initial addresses
+
+	#iterate over list and print address and append correct address
+	#jmp,jnz,jne,je,jz,jg,jl, jge,jae,ja
+	for i, val in enumerate(m):
+		#print m[i][10:]
+		print m[i][10:13]
+		if(m[i][10:13]=="jmp" and m[i][-1]!= ']'):
+			print m[i][10+6:].zfill(8)
+			CFG_entry.append(m[i][10+6:].zfill(8))
+		if(m[i][10:13]=="jmp" and m[i][-1]== ']'):
+			print m[i][10+7:-1].zfill(8)
+			CFG_entry.append(m[i][10+7:-1].zfill(8))	
+		if(m[i][10:13]=="jnz" or m[i][10:13]=="jne" or m[i][10:13]=="jge" or m[i][10:13]=="jae"):
+			print m[i][10+6:].zfill(8)
+			print m[i+1][:8].zfill(8)
+			CFG_entry.append(m[i][10+6:].zfill(8))
+			CFG_entry.append(m[i+1][:8].zfill(8))
+		if(m[i][10:13]=="jle" or m[i][10:13]=="jbe" or m[i][10:13]=="jno" or m[i][10:13]=="jns"):
+			print m[i][10+6:].zfill(8)
+			CFG_entry.append(m[i][10+6:].zfill(8))
+			CFG_entry.append(m[i+1][:8].zfill(8))
+		if(m[i][10:12]=="je" or m[i][10:12]=="jz" or  m[i][10:12]=="jg" or  m[i][10:12]=="jl"):
+			print m[i][10+5:].zfill(8)
+			CFG_entry.append(m[i][10+5:].zfill(8))
+			CFG_entry.append(m[i+1][:8].zfill(8))
+		if(m[i][10:12]=="ja" or m[i][10:12]=="jb" or  m[i][10:12]=="jo" or  m[i][10:12]=="js"):
+			print m[i][10+5:].zfill(8)
+			CFG_entry.append(m[i][10+5:].zfill(8))
+			CFG_entry.append(m[i+1][:8].zfill(8))			
+		if(m[i][10:14]=="call" and m[i][-1]!= ']'):
+			print m[i][10+7:].zfill(8)
+			CFG_entry.append(m[i][10+7:].zfill(8))
+		if(m[i][10:14]=="call" and m[i][-1] == ']'):
+			print m[i][10+8:-1].zfill(8)
+			CFG_entry.append(m[i][10+8:-1].zfill(8))	
+	
+	CFG_Counter = 1
+	p = open("CFG.txt",'w')
+	for x in sorted(instr_key):
+		if(CFG_entry.count(x)>0):
+			p.write("Basic Block: "+str(CFG_Counter)+"\n")
+			CFG_Counter+=1
+		p.write(x +":"+ instr_key[x]+"\n")
+	p.close()
+	
+	CFG_entry = list(set(CFG_entry))
+	out += "\n"+"Basic Blocks Found: "+str(CFG_Counter) 
+	#print CFG_entry
 	
 	return out
 

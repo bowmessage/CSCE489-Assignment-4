@@ -23,7 +23,7 @@ class Window(QtGui.QWidget):
         openFileButton.clicked.connect(self.showDialog)
         self.formLayout.addWidget(openFileButton)
         self.setLayout(self.formLayout)
-        self.setWindowTitle("Assignment 4")
+        self.setWindowTitle("Assignment 5")
 
         self.tabWidget = QtGui.QTabWidget()
 
@@ -38,10 +38,10 @@ class Window(QtGui.QWidget):
         self.tabWidget.addTab(self.decodeOutputArea, "Decoder Output")
 
         self.assemblyTxtArea = QtGui.QPlainTextEdit("assembly")
-        self.tabWidget.addTab(self.assemblyTxtArea, "XED Output")
+        self.tabWidget.addTab(self.assemblyTxtArea, "Assembly Code Section Output")
 
-        self.assemblyPeTxtArea = QtGui.QPlainTextEdit("assembly_pefile")
-        self.tabWidget.addTab(self.assemblyPeTxtArea, "PydASM Output")
+        self.assemblyPeTxtArea = QtGui.QPlainTextEdit("imported")
+        self.tabWidget.addTab(self.assemblyPeTxtArea, "Imported DLL and Functions")
 
         self.controlFlowGraph = CFGWidget()
         self.tabWidget.addTab(self.controlFlowGraph, "Graph View")
@@ -71,11 +71,11 @@ class Window(QtGui.QWidget):
             self.assemblyTxtArea.setPlainText(assemblyTxt)
             
 
-        with open ("Assembly_pefile.txt", "r") as f:
+        with open ("Imported.txt", "r") as f:
             assemblyPeTxt=f.read()
             self.assemblyPeTxtArea.setPlainText(assemblyPeTxt)
 
-        self.controlFlowGraph.setAssemblyText(self.assemblyPeTxtArea.toPlainText())
+        self.controlFlowGraph.setAssemblyText(self.assemblyTxtArea.toPlainText())
 
         if not self.fileOpened:
             self.formLayout.addWidget(self.fileNameLabel)
