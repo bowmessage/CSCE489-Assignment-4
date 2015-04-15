@@ -316,7 +316,7 @@ def autolabel(ax, rects):
         ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
                 ha='center', va='bottom')
 
-def showgraph(opcode_histogram):
+def save_histogram_image(opcode_histogram, filename):
 
 	N = len(opcode_histogram)
 
@@ -334,10 +334,8 @@ def showgraph(opcode_histogram):
 	opcodes = opcode_histogram.keys()
 	ax.set_xticklabels( opcodes )
 
-	#ax.legend( (rects1[0]), ('Instructions') )
-
-
-
 	autolabel(ax, rects1)
-
-	plt.show()
+	params = plt.gcf()
+	plSize = params.get_size_inches()
+	params.set_size_inches( (plSize[0]*2, plSize[1]) )
+	plt.savefig(filename)
