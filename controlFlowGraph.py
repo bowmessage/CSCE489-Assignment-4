@@ -21,7 +21,7 @@ class CFGWidget(QtGui.QGraphicsView):
 
     def setAssemblyText(self, text):
       self.assemblyText = text
-      self.cfgScene.addText(self.assemblyText)
+      textItem = self.cfgScene.addText(text)
 
     def dragMoveEvent(self, event):
       pass

@@ -70,12 +70,14 @@ class Window(QtGui.QWidget):
             assemblyPeTxt=f.read()
             self.assemblyPeTxtArea.setPlainText(assemblyPeTxt)
 
-        self.controlFlowGraph.setAssemblyText(self.assemblyTxtArea.toPlainText())
+        with open ("CFG.txt", "r") as f:
+          cfgtext=f.read()
+
+        self.controlFlowGraph.setAssemblyText(cfgtext)
 
         if not self.fileOpened:
             self.formLayout.addWidget(self.fileNameLabel)
             self.formLayout.addWidget(self.tabWidget)
-            self.formLayout.addWidget(self.assemblyPeGraphButton)
             self.fileOpened = True
 
     def showStatistics(self):
