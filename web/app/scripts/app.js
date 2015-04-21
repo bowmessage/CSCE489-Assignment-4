@@ -31,6 +31,10 @@ angular
         templateUrl: 'views/upload.html',
         controller: 'UploadCtrl'
       })
+      .when('/work', {
+        templateUrl: 'views/work.html',
+        controller: 'WorkCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
