@@ -201,15 +201,17 @@ def decode_main(filename):
 		data = pe.get_memory_mapped_image()[ep-(ep_ava - (int(starting_code,16))):ep+0xffffffff]
 		offset = 0
 		p = open('Assembly.txt','w')
+		q = open('Inst_bytes.txt', 'w')
 		while offset < len(data):
 			i = pydasm.get_instruction(data[offset:], pydasm.MODE_32)
 			if (pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset) is not None): 
 				p.write(str(format((int(starting_code,16))+offset,'x' ).zfill(8))+": "+pydasm.get_instruction_string(i, pydasm.FORMAT_INTEL, ep_ava+offset)+"\n")
-				#out += "\n" +  "one"
+				q.write(''.join(x.encode('hex') for x in data[offset:offset+i.length])+ "\n" )
 				offset += i.length
 			else:
 				offset += 1
 		p.close()
+		q.close()
 		
 		'''		random start info
 		pe =  pefile.PE(filename)
@@ -235,16 +237,40 @@ def decode_main(filename):
 		p.close()
 		'''
 		#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	 
-	# print sections and sizes
-	for section in pe.sections:
-		 print (section.Name, hex(section.VirtualAddress),hex(section.Misc_VirtualSize), section.SizeOfRawData )
+	if m is not None: 
+		# print sections and sizes
+		for section in pe.sections:
+			print (section.Name, hex(section.VirtualAddress),hex(section.Misc_VirtualSize), section.SizeOfRawData )
 	#/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	# full dump info
-	p = open("Full.txt", 'w')		
-	p.write( pe.dump_info())	
-	p.close()
+		# full dump info
+		p = open("Full.txt", 'w')		
+		p.write( pe.dump_info())	
+		p.close()
+	
+	#/////////////////////////////////////////////////////////////////////////////////////////////////////
+		state = 0; # state 0, ready for new word, currently parsing a word
+		for section in pe.sections:
+			if(section.Name[:6] == ".rdata"):
+				print "address" + hex(section.PointerToRawData) + str(section.SizeOfRawData)
+				p = open("String_table.txt", 'w')
+				i = section.PointerToRawData*2
+				while i < ((section.PointerToRawData + section.SizeOfRawData)*2 -1):
+					hexstr = binhex[i]+binhex[i+1]
+					if(state == 0 and int(hexstr,16) > 15 and (int(hexstr,16) < 254 or int(hexstr,16) > 254)):
+						# image_base + virtual address + offset into raw data
+						p.write("Addr: " + hex(int(image_base,16)+section.VirtualAddress + (i+1)/2 - section.PointerToRawData )+": ")
+						state = 1
+					if(state == 1):	
+						if( int(hexstr,16) > 15 and (int(hexstr,16) < 254 or int(hexstr,16) > 254)) :
+							p.write( unichr(int(hexstr,16)).encode('utf8'))
+						else:
+							p.write("\n")
+							state = 0
+					i+=2
+			p.close()
+	
+	
 	#/////////////////////////////////////////////////////////////////////////////////////////////////////
 	#Declare a list for a list of entry points of basic blocks
 	CFG_entry = []
@@ -263,35 +289,35 @@ def decode_main(filename):
 	#jmp,jnz,jne,je,jz,jg,jl, jge,jae,ja
 	for i, val in enumerate(m):
 		#print m[i][10:]
-		print m[i][10:13]
+		#print m[i][10:13]
 		if(m[i][10:13]=="jmp" and m[i][-1]!= ']'):
-			print m[i][10+6:].zfill(8)
+			#print m[i][10+6:].zfill(8)
 			CFG_entry.append(m[i][10+6:].zfill(8))
 		if(m[i][10:13]=="jmp" and m[i][-1]== ']'):
-			print m[i][10+7:-1].zfill(8)
+			#print m[i][10+7:-1].zfill(8)
 			CFG_entry.append(m[i][10+7:-1].zfill(8))	
 		if(m[i][10:13]=="jnz" or m[i][10:13]=="jne" or m[i][10:13]=="jge" or m[i][10:13]=="jae"):
-			print m[i][10+6:].zfill(8)
-			print m[i+1][:8].zfill(8)
+			#print m[i][10+6:].zfill(8)
+			#print m[i+1][:8].zfill(8)
 			CFG_entry.append(m[i][10+6:].zfill(8))
 			CFG_entry.append(m[i+1][:8].zfill(8))
 		if(m[i][10:13]=="jle" or m[i][10:13]=="jbe" or m[i][10:13]=="jno" or m[i][10:13]=="jns"):
-			print m[i][10+6:].zfill(8)
+			#print m[i][10+6:].zfill(8)
 			CFG_entry.append(m[i][10+6:].zfill(8))
 			CFG_entry.append(m[i+1][:8].zfill(8))
 		if(m[i][10:12]=="je" or m[i][10:12]=="jz" or  m[i][10:12]=="jg" or  m[i][10:12]=="jl"):
-			print m[i][10+5:].zfill(8)
+			#print m[i][10+5:].zfill(8)
 			CFG_entry.append(m[i][10+5:].zfill(8))
 			CFG_entry.append(m[i+1][:8].zfill(8))
 		if(m[i][10:12]=="ja" or m[i][10:12]=="jb" or  m[i][10:12]=="jo" or  m[i][10:12]=="js"):
-			print m[i][10+5:].zfill(8)
+			#print m[i][10+5:].zfill(8)
 			CFG_entry.append(m[i][10+5:].zfill(8))
 			CFG_entry.append(m[i+1][:8].zfill(8))			
 		if(m[i][10:14]=="call" and m[i][-1]!= ']'):
-			print m[i][10+7:].zfill(8)
+			#print m[i][10+7:].zfill(8)
 			CFG_entry.append(m[i][10+7:].zfill(8))
 		if(m[i][10:14]=="call" and m[i][-1] == ']'):
-			print m[i][10+8:-1].zfill(8)
+			#print m[i][10+8:-1].zfill(8)
 			CFG_entry.append(m[i][10+8:-1].zfill(8))	
 	
 	CFG_Counter = 1
